@@ -28,9 +28,15 @@ home=home.replace('More Than Media Placement.','More Than Media Placement.').rep
 # Shared source assets and deterministic output.
 d.mkdir(exist_ok=True)
 (d/'assets').mkdir(exist_ok=True)
-for asset in p.parent.iterdir():
- if asset.suffix.lower() in ['.jpg','.png','.gif']: shutil.copy2(asset,d/'assets'/asset.name)
-for asset in ['style.css','app.js']: shutil.copy2(p/'src'/asset,d/asset)
+root_dir = p.parent
+(root_dir/'assets').mkdir(exist_ok=True)
+for asset in root_dir.iterdir():
+ if asset.is_file() and asset.suffix.lower() in ['.jpg','.png','.gif']:
+  shutil.copy2(asset,d/'assets'/asset.name)
+  shutil.copy2(asset,root_dir/'assets'/asset.name)
+for asset in ['style.css','app.js']:
+ shutil.copy2(p/'src'/asset,d/asset)
+ shutil.copy2(p/'src'/asset,root_dir/asset)
 nav.insert(0,('Home',''))
 header=header.replace('<nav id="navigation">','<nav id="navigation"><a href="/">Home</a>')
 options=''.join(f'<a href="/solutions/{i}/">{name}</a>' for i,name in enumerate(formats))
@@ -68,4 +74,7 @@ for slug,(title,body) in pages.items():
  target=d/slug;target.mkdir(parents=True,exist_ok=True)
  document=f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} | Billboard Connection</title><meta name="description" content="{title}. Explore outdoor advertising with Billboard Connection. Call (310) 429-3900."><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head><body><a class="skip" href="#main">Skip to content</a>{render_icons(header)}<main id="main">{render_icons(body)}{"" if slug in ["privacy","terms","request-a-proposal","thank-you"] else render_icons(cta)}</main>{render_icons(footer)}</body></html>'
  (target/'index.html').write_text(document)
+ if root_dir != p:
+  root_target=root_dir/slug;root_target.mkdir(parents=True,exist_ok=True)
+  (root_target/'index.html').write_text(document)
 print(f'Built {len(pages)} pages')
